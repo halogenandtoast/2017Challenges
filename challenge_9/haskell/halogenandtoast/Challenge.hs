@@ -5,8 +5,11 @@ import Data.List ( partition )
 isNegative :: Int -> Bool
 isNegative = (< 0)
 
-combine :: [Int] -> [Int] -> [Int]
-combine = combine' []
+tmap :: ((a -> c), (b -> d)) -> (a, b) -> (c, d)
+tmap (f, g) (x, y) = (f x, g y)
+
+combine :: ([Int], [Int]) -> [Int]
+combine (f, s) = combine' [] f s
   where
     combine' acc [] ys = acc ++ ys
     combine' acc xs [] = acc ++ xs
@@ -15,8 +18,9 @@ combine = combine' []
                                         else combine' (acc ++ [y]) n ys
 
 squares :: [Int] -> [Int]
-squares xs = combine negatives positives
+squares = combine . groups
   where
-    groups = partition isNegative xs
-    negatives = foldl (\ns n -> n^2:ns) [] (fst groups)
-    positives = map (^2) (snd groups)
+    partitions = partition isNegative
+    groups = tmap (reverseSquare, square) . partitions
+    reverseSquare = foldl (\xs x -> x^2:xs) []
+    square = map (^2)
